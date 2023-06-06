@@ -14,6 +14,7 @@ public class PrimsMaze
     private Vector2 start;
     private List<Vector2> frontier;
     private int[,] maze;
+    private int[,] distanceMatrix;
 
     private Random rand;
     public PrimsMaze(int width, int height, Vector2 start) { 
@@ -24,13 +25,17 @@ public class PrimsMaze
         rand = new Random();
         frontier = new List<Vector2>();
         maze = new int[height, width];
-
+        distanceMatrix = new int[height, width];
+        
 
         frontier.Add(start);
 
-        //printGraph();
         Run();
         printGraph();
+        Console.WriteLine();
+        print2D(maze);
+        Console.WriteLine();
+        print2D(distanceMatrix);
     }
 
     public void Run()
@@ -40,8 +45,10 @@ public class PrimsMaze
             int index = rand.Next(0, frontier.Count);
             CheckOppositeNeighbors(frontier[index]);
             frontier.RemoveAt(index);
-            //printGraph();
-            Console.WriteLine("\n");
+            printGraph();
+            Console.WriteLine();
+            print2D(distanceMatrix);
+            Console.WriteLine();
         }
     }
 
@@ -58,8 +65,6 @@ public class PrimsMaze
             maze[y, (sign == -1) ? x + 1 : x - 1] = PATH; //Set direct neighbor to path
             frontier.Add(new Vector2(x, y)); //Add opposite neibor to list of possibe frontier
             maze[y, x] = VISITED; //add opposite neighbor to visited and now possible frontier
-
-           // printGraph();
         }
         // If it is unvisited it is either a path, wall or marked as visited if it is a path,
         // mark the inbetween as wall
@@ -67,13 +72,12 @@ public class PrimsMaze
         else if (maze[y, x] == WALL)
         {
             maze[y, (sign == -1) ? x + 1 : x - 1] = PATH;
-            //printGraph();
+           
         } 
         //IF PATH MARK AS WALL
         else if (maze[y, x] == PATH || maze[y, x] == VISITED)
         {
             maze[y, (sign == -1) ? x + 1 : x - 1] = (maze[y, (sign == -1) ? x + 1 : x - 1] == PATH) ? PATH : WALL;
-            //printGraph();
         }
     }
 
@@ -85,21 +89,17 @@ public class PrimsMaze
             maze[(sign == -1) ? y + 1 : y - 1, x] = PATH;
             frontier.Add(new Vector2(x, y));
             maze[y, x] = VISITED;
-
-           // printGraph();
         }
         //IF MARKED AS WALL OR VISITED CHANGE DIRECT NEIGHBOR TO PATH
         else if (maze[y, x] == WALL)
         {
             maze[(sign == -1) ? y + 1 : y - 1, x] = PATH;
 
-            //printGraph();
         }
         //IF PATH MARK AS WALL
         else if (maze[y, x] == PATH || maze[y, x] == VISITED)
         {
             maze[(sign == -1) ? y + 1 : y - 1, x] = (maze[(sign == -1) ? y + 1 : y - 1, x] == PATH) ? PATH : WALL;
-            //printGraph();
         }
     }
 
@@ -125,7 +125,7 @@ public class PrimsMaze
 
         if (KeepInRange(pos.Y + 2, height - 1))
         {
-            BuildMazeY((int) pos.X, (int) pos.Y + 2, 1);
+            BuildMazeY((int)pos.X, (int)pos.Y + 2, 1);
         }
     }
 
@@ -138,16 +138,40 @@ public class PrimsMaze
 
     public void printGraph()
     {
+        //Width++ because we added an extra wall at start of col
+        /*for(int i = 0; i < width + 1; i++)
+        {
+            Console.Write("|");
+        }
+        Console.WriteLine();*/
+
         //row length
         for (int i = 0; i < height; i++)
         {
             //col length?
             for (int j = 0; j < width; j++)
             {
+                //if (j == 0) Console.Write("|");
                 //Thread.Sleep(20);
-                if (maze[i, j] == WALL || maze[i, j] == 0)
+                if (maze[i, j] == WALL /*|| maze[i, j] == 0*/)
                     Console.Write("|");
-                else Console.Write((char)186);
+                else if (maze[i, j] == PATH)
+                {
+                    Console.Write((char)186);
+                }
+                else Console.Write(maze[i, j]);
+            }
+            Console.WriteLine();
+        }
+    }
+
+    public void print2D(int[,] graph)
+    {
+        for(int i = 0; i < graph.GetLength(0); i++)
+        {
+            for (int j = 0; j < graph.GetLength(1); j++)
+            {
+                Console.Write(graph[i, j]);
             }
             Console.WriteLine();
         }
@@ -160,8 +184,8 @@ public class Program
 {
     static void Main(String[] args)
     {
-        int height = 50;
-        int width = 100;
+        int height = 5;
+        int width = 10;
         PrimsMaze prims = new PrimsMaze(width, height, new Vector2(0, 0));
 
     }
