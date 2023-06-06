@@ -26,7 +26,8 @@ public class PrimsMaze
         frontier = new List<Vector2>();
         maze = new int[height, width];
         distanceMatrix = new int[height, width];
-        
+
+        distanceMatrix[(int)start.Y, (int)start.X] = 1;
 
         frontier.Add(start);
 
@@ -111,21 +112,65 @@ public class PrimsMaze
         if(KeepInRange(pos.X - 2, width - 1))
         {
             BuildMazeX((int) pos.X - 2, (int) pos.Y, -1);
+
+
+            if (distanceMatrix[(int) pos.Y, (int) pos.X-1] == 0)
+            {
+                distanceMatrix[(int)pos.Y, (int)pos.X - 1] = (distanceMatrix[(int)pos.Y, (int)pos.X] + 1) % 10;
+            }
+            if (distanceMatrix[(int)pos.Y, (int)pos.X - 2] == 0)
+            {
+                distanceMatrix[(int)pos.Y, (int)pos.X - 2] = (distanceMatrix[(int)pos.Y, (int)pos.X - 1] + 1) % 10;
+            }
+
+
         }
 
         if(KeepInRange(pos.X + 2, width - 1))
         {
             BuildMazeX((int) pos.X + 2, (int) pos.Y, 1);
+
+
+            if (distanceMatrix[(int)pos.Y, (int)pos.X + 1] == 0)
+            {
+                distanceMatrix[(int)pos.Y, (int)pos.X + 1] = (distanceMatrix[(int)pos.Y, (int)pos.X] + 1) % 10;
+            }
+            if (distanceMatrix[(int)pos.Y, (int)pos.X + 2] == 0)
+            {
+                distanceMatrix[(int)pos.Y, (int)pos.X + 2] = (distanceMatrix[(int)pos.Y, (int)pos.X + 1] + 1) % 10;
+            }
         }
 
         if(KeepInRange(pos.Y - 2, height - 1))
         {
             BuildMazeY((int) pos.X,(int) pos.Y - 2, -1);
+
+            if (distanceMatrix[(int)pos.Y - 1, (int)pos.X] == 0)
+            {
+                distanceMatrix[(int)pos.Y - 1, (int)pos.X] = (distanceMatrix[(int)pos.Y, (int)pos.X] + 1) % 10;
+            }
+            if (distanceMatrix[(int)pos.Y - 2, (int)pos.X] == 0)
+            {
+                distanceMatrix[(int)pos.Y - 2, (int)pos.X] = (distanceMatrix[(int)pos.Y - 1, (int)pos.X ] + 1) % 10;
+            }
+
+
         }
 
         if (KeepInRange(pos.Y + 2, height - 1))
         {
             BuildMazeY((int)pos.X, (int)pos.Y + 2, 1);
+
+
+            if (distanceMatrix[(int)pos.Y + 1, (int)pos.X] == 0)
+            {
+                distanceMatrix[(int)pos.Y + 1, (int)pos.X] = (distanceMatrix[(int)pos.Y, (int)pos.X] + 1) % 10;
+            }
+            if (distanceMatrix[(int)pos.Y + 2, (int)pos.X] == 0)
+            {
+                distanceMatrix[(int)pos.Y + 2, (int)pos.X] = (distanceMatrix[(int)pos.Y + 1, (int)pos.X] + 1) % 10;
+            }
+
         }
     }
 
@@ -153,7 +198,7 @@ public class PrimsMaze
             {
                 //if (j == 0) Console.Write("|");
                 //Thread.Sleep(20);
-                if (maze[i, j] == WALL /*|| maze[i, j] == 0*/)
+                if (maze[i, j] == WALL || maze[i, j] == 0)
                     Console.Write("|");
                 else if (maze[i, j] == PATH)
                 {
@@ -178,7 +223,59 @@ public class PrimsMaze
     }
 }
 
+public class BFS
+{
+    int VISITED = 1;
 
+    private Queue<Vector2> vertices;
+    private int[,] graph;
+    private Vector2 start;
+
+    public BFS(int[,] graph, Vector2 start)
+    {
+        this.start = start;
+        this.graph = graph;
+        vertices = new Queue<Vector2>();
+    }
+
+    public int[,] ComputeDistances(Vector2 start, int[,] graph)
+    {
+        int[,] distanceMatrix = new int[graph.GetLength(0), graph.GetLength(1)];
+        vertices.Enqueue(start);
+        distanceMatrix[(int)start.Y, (int)start.X] = VISITED;
+
+        while(vertices.Count > 0)
+        {
+            Vector2 pos = vertices.Dequeue();
+            List<Vector2> neighbors = ProcessNeigbors(pos, distanceMatrix);
+
+            foreach(Vector2 v in neighbors)
+            {
+                if (distanceMatrix[(int) v.Y, (int) v.X] == 0) //Unprocessed
+                {
+                    vertices.Enqueue(v);
+                    distanceMatrix[(int)v.Y, (int)v.X] = VISITED;
+                }
+            }
+        }
+
+        return distanceMatrix;
+    }
+
+    public List<Vector2> ProcessNeigbors(Vector2 pos, int[,] distanceMatrix)
+    {
+        List<Vector2> neighbors = new List<Vector2>();
+        //Check Neighbors
+        
+
+        return neighbors;
+    }
+
+    
+
+
+
+}
 
 public class Program
 {
