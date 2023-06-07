@@ -8,12 +8,13 @@ public class PrimsMaze
     int WALL = 2;
 
     private int width, height;
-    private Vector2 start;
     private List<Vector2> frontier;
-    private int[,] maze;
     private int[,] distanceMatrix;
 
     private Random rand;
+
+    public Vector2 start { get; set; }
+    public int[,] maze { get; set; }
     public PrimsMaze(int width, int height, Vector2 start) { 
         this.width = width;
         this.height = height;
@@ -29,25 +30,6 @@ public class PrimsMaze
         frontier.Add(start);
 
         Run();
-
-        printGraph();
-        Console.WriteLine();
-       
-        /*print2D(distanceMatrix);
-        Console.WriteLine();*/
-        
-        //BFS
-        BFS bfs = new BFS();
-        BFS.Vertice[,] distanceMatrixBFS = new BFS.Vertice[height, width];
-        distanceMatrixBFS = bfs.ComputeDistances(start, maze);
-        /*bfs.PrintVerticeGraph(distanceMatrixBFS);*/
-        Console.WriteLine("BFS Max Distance: " + bfs.max.Distance + "\nBFS Location: " + bfs.max.position.ToString() + "\n");
-
-        maze = bfs.TracePath(distanceMatrixBFS, maze, start, bfs.max.position);
-        bfs.PrintVerticeGraphParents(distanceMatrixBFS);
-
-        Console.WriteLine();
-        printGraph();
     }
 
     /// <summary>
@@ -370,7 +352,7 @@ public class BFS
         {
             maze[(int)end.Y, (int)end.X] = pathChar; //Set maze value to a given char
             //Recursive call to mark the new end as the parent vertice of the current end
-            return TracePath(distanceMatrix, maze, start, distanceMatrix[(int)end.Y, (int)end.X].Prev);
+            return TracePath(distanceMatrix, maze, start, distanceMatrix[(int)end.Y, (int)end.X].Prev, pathChar);
         }
         //Set start value to pathChar
         maze[(int)end.Y, (int)end.X] = pathChar;
@@ -413,9 +395,21 @@ public class Program
 {
     static void Main(String[] args)
     {
-        int height = 50;
-        int width = 100;
-        PrimsMaze prims = new PrimsMaze(width, height, new Vector2(0, 0));
+        int height = 18;
+        int width = 32;
+        PrimsMaze prims = new PrimsMaze(width, height, new Vector2(new Random().Next(0, width-1), 0));
+        prims.printGraph();
 
+        //BFS
+        BFS bfs = new BFS();
+        BFS.Vertice[,] distanceMatrixBFS = new BFS.Vertice[height, width];
+        distanceMatrixBFS = bfs.ComputeDistances(prims.start, prims.maze);
+
+        Console.WriteLine("BFS Max Distance: " + bfs.max.Distance + "\nBFS Location: " + bfs.max.position.ToString() + "\n");
+        //Back Track Path
+        prims.maze = bfs.TracePath(distanceMatrixBFS, prims.maze, prims.start, bfs.max.position, pathChar: '@');
+
+        Console.WriteLine();
+        prims.printGraph();
     }
 }
