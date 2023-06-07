@@ -266,7 +266,7 @@ public class BFS
                     
                     //Set there location
                     distanceMatrix[(int)v.Y, (int)v.X].Loc = v;
-                    //Sets them as visited
+                    //Sets them as visited and marks distance as one more than previous
                     distanceMatrix[(int)v.Y, (int)v.X].Distance = (distanceMatrix[(int) currVert.Y, (int) currVert.X].Distance + 1);
                     //Set Prev
                     distanceMatrix[(int)v.Y, (int)v.X].Prev = currVert;
@@ -278,17 +278,14 @@ public class BFS
                     else
                         //other wise turn is kept the same
                         distanceMatrix[(int)v.Y, (int)v.X].Turns = distanceMatrix[(int)currVert.Y, (int)currVert.X].Turns;
-
-                    //Update max distance
-                    if (maxDistance.Distance < distanceMatrix[(int)currVert.Y, (int)currVert.X].Distance + 1)
-                        maxDistance = distanceMatrix[(int)currVert.Y, (int)currVert.X];
-
-                    //update max turns
-                    //Max turns vertice = the current max or the current vertices turns
-                    maxTurns = Math.Max(maxTurns.Turns, distanceMatrix[(int)v.Y, (int)v.X].Turns) == maxTurns.Turns ? maxTurns : distanceMatrix[(int)v.Y, (int)v.X];
-
-                      
                 }
+                //Update max distance
+                if (maxDistance.Distance < distanceMatrix[(int)v.Y, (int)v.X].Distance + 1)
+                    maxDistance = distanceMatrix[(int)v.Y, (int)v.X];
+
+                //update max turns
+                //Max turns vertice = the current max or the current vertices turns
+                maxTurns = Math.Max(maxTurns.Turns, distanceMatrix[(int)v.Y, (int)v.X].Turns) == maxTurns.Turns ? maxTurns : distanceMatrix[(int)v.Y, (int)v.X];
             }
         }
 
@@ -352,16 +349,17 @@ public class BFS
         return pathTraceGraph;
     }
     //Back track
-    public int[,] TracePath(Vertice[,] distanceMatrix, int[,] maze, Vector2 start, Vector2 end, char pathChar = '*')
+    public int[,] TracePath(Vertice[,] distanceMatrix, int[,] maze, Vector2 start, Vector2 end, char pathChar = '@')
     {
         if (end != start)
         {
-            maze[(int)end.Y, (int)end.X] = pathChar; //Set maze value to a given char
+            //Set maze value to a given char
+            maze[(int)end.Y, (int)end.X] = pathChar; 
             //Recursive call to mark the new end as the parent vertice of the current end
             return TracePath(distanceMatrix, maze, start, distanceMatrix[(int)end.Y, (int)end.X].Prev, pathChar);
         }
         //Set start value to pathChar
-        maze[(int)end.Y, (int)end.X] = pathChar;
+        maze[(int)start.Y, (int)start.X] = pathChar;
         return maze;
     }
 
@@ -413,8 +411,9 @@ public class Program
     static void Main(String[] args)
     {
         int height = 20;
-        int width = 120;
-        PrimsMaze prims = new PrimsMaze(width, height, new Vector2(new Random().Next(0, width-1), 0));
+        int width = 100;
+        Vector2 start = new Vector2(0, 0);
+        PrimsMaze prims = new PrimsMaze(width, height, start);
         prims.printGraph();
         Console.WriteLine();
 
@@ -426,11 +425,18 @@ public class Program
         //Back Track Path
         prims.maze = bfs.TracePath(distanceMatrixBFS, prims.maze, prims.start, bfs.maxDistance.Loc, pathChar: '@');
         Console.WriteLine("BFS Max Distance: " + bfs.maxDistance.Distance + "\nMax Distance Turns: " + bfs.maxDistance.Turns + "\nMax distance end loc: " + bfs.maxDistance.Loc.ToString());
+        //Set start and End
+        prims.maze[(int)start.Y, (int)start.X] = '$';
+        prims.maze[(int)bfs.maxDistance.Loc.Y, (int)bfs.maxDistance.Loc.X] = '$';
         prims.printGraph();
 
-        prims.maze = bfs.TracePath(distanceMatrixBFS, prims.maze, prims.start, bfs.maxTurns.Loc, pathChar: '@');
+        prims.maze = bfs.TracePath(distanceMatrixBFS, prims.maze, prims.start, bfs.maxTurns.Loc, pathChar: '&');
         Console.WriteLine();
         Console.Write("Max Turns Distance: " + bfs.maxTurns.Distance + "\nMax Turns Value: " + bfs.maxTurns.Turns + "\nMax turns end loc: " + bfs.maxTurns.Loc.ToString() + "\n");
+        prims.maze[(int)start.Y, (int)start.X] = '$';
+        prims.maze[(int)bfs.maxTurns.Loc.Y, (int)bfs.maxTurns.Loc.X] = '$';
         prims.printGraph();
+
+
     }
 }
