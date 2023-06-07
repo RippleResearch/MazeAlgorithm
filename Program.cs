@@ -324,17 +324,6 @@ public class BFS
         return neighbors;
     }
 
-    public void fill(int[,] matrix, int value)
-    {
-        for (int i = 0; i < matrix.GetLength(0); i++)
-        {
-            for (int j = 0; j < matrix.GetLength(1); j++)
-            {
-                matrix[i, j] = value;
-            }
-        }
-    }
-
     public int[,] GetPath(Vertice[,] distanceMatrix, int[,] maze, Vector2 end)
     {
         int[,] pathTraceGraph = new int[maze.GetLength(0), maze.GetLength(1)];
@@ -395,8 +384,8 @@ public class Program
 {
     static void Main(String[] args)
     {
-        int height = 18;
-        int width = 32;
+        int height = 50;
+        int width = 100;
         PrimsMaze prims = new PrimsMaze(width, height, new Vector2(new Random().Next(0, width-1), 0));
         prims.printGraph();
 
