@@ -40,6 +40,9 @@ public class PrimsMaze
         int[,] distanceMatrixBFS = new int[height, width];
         distanceMatrixBFS = bfs.ComputeDistances(start, maze);
         print2D(distanceMatrixBFS);
+
+
+        Console.WriteLine("BFS Max Distance: " + bfs.max.Distance + "\nBFS Location: " + bfs.max.position.ToString());
     }
 
     /// <summary>
@@ -242,7 +245,13 @@ public class BFS
         public Vector2 position { get; set; }
     }
 
-    private Max max;
+    public struct Vertice
+    {
+        public int Distance { get; set; }
+        public Vector2 Prev { get; set; }
+    }
+
+    public Max max;
     public BFS()
     {
         max = new Max();
@@ -273,7 +282,7 @@ public class BFS
                         max.Distance = distanceMatrix[(int)currVert.Y, (int)currVert.X] + 1;
                         max.position = v;
                     }
-                    distanceMatrix[(int)v.Y, (int)v.X] =  (distanceMatrix[(int) currVert.Y, (int) currVert.X] + 1) % 10;
+                    distanceMatrix[(int)v.Y, (int)v.X] =  (distanceMatrix[(int) currVert.Y, (int) currVert.X] + 1);
                 }
             }
         }
