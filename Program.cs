@@ -30,14 +30,17 @@ public class PrimsMaze
         distanceMatrix[(int)start.Y, (int)start.X] = 1;
 
         frontier.Add(start);
+        //fill(distanceMatrix, -1);
 
         Run();
         printGraph();
         Console.WriteLine();
-        print2D(maze);
-        Console.WriteLine();
+        //print2D(maze);
+        //Console.WriteLine();
         print2D(distanceMatrix);
     }
+
+  
 
     public void Run()
     {
@@ -112,65 +115,45 @@ public class PrimsMaze
         if(KeepInRange(pos.X - 2, width - 1))
         {
             BuildMazeX((int) pos.X - 2, (int) pos.Y, -1);
-
-
-            if (distanceMatrix[(int) pos.Y, (int) pos.X-1] == 0)
-            {
-                distanceMatrix[(int)pos.Y, (int)pos.X - 1] = (distanceMatrix[(int)pos.Y, (int)pos.X] + 1) % 10;
-            }
-            if (distanceMatrix[(int)pos.Y, (int)pos.X - 2] == 0)
-            {
-                distanceMatrix[(int)pos.Y, (int)pos.X - 2] = (distanceMatrix[(int)pos.Y, (int)pos.X - 1] + 1) % 10;
-            }
-
-
+            CalculateDistance((int) pos.X - 2,(int) pos.Y, -1, true);
         }
 
         if(KeepInRange(pos.X + 2, width - 1))
         {
             BuildMazeX((int) pos.X + 2, (int) pos.Y, 1);
-
-
-            if (distanceMatrix[(int)pos.Y, (int)pos.X + 1] == 0)
-            {
-                distanceMatrix[(int)pos.Y, (int)pos.X + 1] = (distanceMatrix[(int)pos.Y, (int)pos.X] + 1) % 10;
-            }
-            if (distanceMatrix[(int)pos.Y, (int)pos.X + 2] == 0)
-            {
-                distanceMatrix[(int)pos.Y, (int)pos.X + 2] = (distanceMatrix[(int)pos.Y, (int)pos.X + 1] + 1) % 10;
-            }
+            CalculateDistance((int)pos.X + 2, (int)pos.Y, 1, true);
         }
 
         if(KeepInRange(pos.Y - 2, height - 1))
         {
             BuildMazeY((int) pos.X,(int) pos.Y - 2, -1);
-
-            if (distanceMatrix[(int)pos.Y - 1, (int)pos.X] == 0)
-            {
-                distanceMatrix[(int)pos.Y - 1, (int)pos.X] = (distanceMatrix[(int)pos.Y, (int)pos.X] + 1) % 10;
-            }
-            if (distanceMatrix[(int)pos.Y - 2, (int)pos.X] == 0)
-            {
-                distanceMatrix[(int)pos.Y - 2, (int)pos.X] = (distanceMatrix[(int)pos.Y - 1, (int)pos.X ] + 1) % 10;
-            }
-
-
+            CalculateDistance((int)pos.X, (int)pos.Y-2, -1, false);
         }
 
         if (KeepInRange(pos.Y + 2, height - 1))
         {
             BuildMazeY((int)pos.X, (int)pos.Y + 2, 1);
+            CalculateDistance((int)pos.X, (int)pos.Y + 2, 1, false);
+        }
+    }
 
-
-            if (distanceMatrix[(int)pos.Y + 1, (int)pos.X] == 0)
-            {
-                distanceMatrix[(int)pos.Y + 1, (int)pos.X] = (distanceMatrix[(int)pos.Y, (int)pos.X] + 1) % 10;
-            }
-            if (distanceMatrix[(int)pos.Y + 2, (int)pos.X] == 0)
-            {
-                distanceMatrix[(int)pos.Y + 2, (int)pos.X] = (distanceMatrix[(int)pos.Y + 1, (int)pos.X] + 1) % 10;
-            }
-
+    public void CalculateDistance(int x, int y, int sign, bool isX)
+    {
+        if (isX)
+        {
+            //If the value has not been set (use sign to see if subtracting or adding)
+            if (distanceMatrix[y, (sign == -1) ? x + 1 : x - 1] == 0)
+                //Then set it to one plus the previous value in the direction of the original vertice
+                distanceMatrix[y, (sign == -1) ? x + 1 : x - 1] = (distanceMatrix[y, (sign == -1) ? x + 2 : x - 2] + 1); // mod 10?
+            if (distanceMatrix[y, x] == 0)
+                distanceMatrix[y, x] = (distanceMatrix[y, (sign == -1) ? x + 1 : x - 1] + 1);
+        }
+        else
+        {
+            if (distanceMatrix[(sign == - 1) ? y + 1 : y - 1, x] == 0)
+                distanceMatrix[(sign == -1) ? y + 1 : y - 1, x] = (distanceMatrix[(sign == -1) ? y + 2 : y - 2, x] + 1);
+            if (distanceMatrix[y, x] == 0)
+                distanceMatrix[y, x] = (distanceMatrix[(sign == -1) ? y + 1 : y - 1, x] + 1);
         }
     }
 
@@ -219,6 +202,17 @@ public class PrimsMaze
                 Console.Write(graph[i, j]);
             }
             Console.WriteLine();
+        }
+    }
+
+    public void fill(int[,] matrix, int value)
+    {
+        for (int i = 0; i < matrix.GetLength(0); i++)
+        {
+            for (int j = 0; j < matrix.GetLength(1); j++)
+            {
+                matrix[i, j] = value;
+            }
         }
     }
 }
