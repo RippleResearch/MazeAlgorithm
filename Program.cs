@@ -225,24 +225,23 @@ public class BFS
     int VISITED = 1;
     private Queue<Vector2> vertices;
 
-
-    public struct Max
-    {
-        public int Distance { get; set; }
-        public Vector2 position { get; set; }
-    }
-
     public struct Vertice
     {
+        public int Turns { get; set; }
         public int Distance { get; set; }
         public Vector2 Prev { get; set; }
+        
+        //For Max Value
+        public Vector2 Loc { get; set; }  
     }
 
-    public Max max;
+    public Vertice maxDistance;
+    public Vertice maxTurns;
     public BFS()
     {
-        max = new Max();
-        max.Distance = -1;
+        
+        maxDistance.Distance = -1;
+        maxTurns.Turns = -1;
 
         vertices = new Queue<Vector2>();
     }
@@ -264,13 +263,31 @@ public class BFS
                 if (distanceMatrix[(int) v.Y, (int) v.X].Distance == UNPROCESS) //Unprocessed
                 {
                     vertices.Enqueue(v);
-                    if(max.Distance < distanceMatrix[(int)currVert.Y, (int)currVert.X].Distance + 1)
-                    {
-                        max.Distance = distanceMatrix[(int)currVert.Y, (int)currVert.X].Distance + 1;
-                        max.position = v;
-                    }
-                    distanceMatrix[(int)v.Y, (int)v.X].Distance = (distanceMatrix[(int) currVert.Y, (int) currVert.X].Distance + 1); //Sets them as visited
+                    
+                    //Set there location
+                    distanceMatrix[(int)v.Y, (int)v.X].Loc = v;
+                    //Sets them as visited
+                    distanceMatrix[(int)v.Y, (int)v.X].Distance = (distanceMatrix[(int) currVert.Y, (int) currVert.X].Distance + 1);
+                    //Set Prev
                     distanceMatrix[(int)v.Y, (int)v.X].Prev = currVert;
+                    //Update Turn
+                    //If the current value x and y location are different than the the its parent vertice of distance 2 then a turn has been made
+                    if ((distanceMatrix[(int)v.Y, (int)v.X].Loc.X != distanceMatrix[(int)currVert.Y, (int)currVert.X].Prev.X && distanceMatrix[(int)v.Y, (int)v.X].Loc.Y != distanceMatrix[(int)currVert.Y, (int)currVert.X].Prev.Y))
+                        //add one to the turn
+                        distanceMatrix[(int)v.Y, (int)v.X].Turns = distanceMatrix[(int)currVert.Y, (int)currVert.X].Turns + 1;
+                    else
+                        //other wise turn is kept the same
+                        distanceMatrix[(int)v.Y, (int)v.X].Turns = distanceMatrix[(int)currVert.Y, (int)currVert.X].Turns;
+
+                    //Update max distance
+                    if (maxDistance.Distance < distanceMatrix[(int)currVert.Y, (int)currVert.X].Distance + 1)
+                        maxDistance = distanceMatrix[(int)currVert.Y, (int)currVert.X];
+
+                    //update max turns
+                    //Max turns vertice = the current max or the current vertices turns
+                    maxTurns = Math.Max(maxTurns.Turns, distanceMatrix[(int)v.Y, (int)v.X].Turns) == maxTurns.Turns ? maxTurns : distanceMatrix[(int)v.Y, (int)v.X];
+
+                      
                 }
             }
         }
@@ -349,7 +366,18 @@ public class BFS
     }
 
 
-    public void PrintVerticeGraph(Vertice[,] graph)
+    public void PrintVerticeTurns(Vertice[,] graph)
+    {
+        for (int i = 0; i < graph.GetLength(0); i++)
+        {
+            for (int j = 0; j < graph.GetLength(1); j++)
+            {
+                Console.Write(graph[i, j].Turns);
+            }
+            Console.WriteLine();
+        }
+    }
+    public void PrintVerticeDistance(Vertice[,] graph)
     {
         for (int i = 0; i < graph.GetLength(0); i++)
         {
@@ -384,21 +412,25 @@ public class Program
 {
     static void Main(String[] args)
     {
-        int height = 50;
-        int width = 100;
+        int height = 20;
+        int width = 120;
         PrimsMaze prims = new PrimsMaze(width, height, new Vector2(new Random().Next(0, width-1), 0));
         prims.printGraph();
+        Console.WriteLine();
 
         //BFS
         BFS bfs = new BFS();
         BFS.Vertice[,] distanceMatrixBFS = new BFS.Vertice[height, width];
         distanceMatrixBFS = bfs.ComputeDistances(prims.start, prims.maze);
 
-        Console.WriteLine("BFS Max Distance: " + bfs.max.Distance + "\nBFS Location: " + bfs.max.position.ToString() + "\n");
         //Back Track Path
-        prims.maze = bfs.TracePath(distanceMatrixBFS, prims.maze, prims.start, bfs.max.position, pathChar: '@');
+        prims.maze = bfs.TracePath(distanceMatrixBFS, prims.maze, prims.start, bfs.maxDistance.Loc, pathChar: '@');
+        Console.WriteLine("BFS Max Distance: " + bfs.maxDistance.Distance + "\nMax Distance Turns: " + bfs.maxDistance.Turns + "\nMax distance end loc: " + bfs.maxDistance.Loc.ToString());
+        prims.printGraph();
 
+        prims.maze = bfs.TracePath(distanceMatrixBFS, prims.maze, prims.start, bfs.maxTurns.Loc, pathChar: '@');
         Console.WriteLine();
+        Console.Write("Max Turns Distance: " + bfs.maxTurns.Distance + "\nMax Turns Value: " + bfs.maxTurns.Turns + "\nMax turns end loc: " + bfs.maxTurns.Loc.ToString() + "\n");
         prims.printGraph();
     }
 }
