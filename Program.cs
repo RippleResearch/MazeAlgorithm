@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Numerics;
-using System.Text;
+﻿using System.Numerics;
 
 public class PrimsMaze
 {
@@ -8,7 +6,6 @@ public class PrimsMaze
     int VISITED = 3;
     int PATH = 1;
     int WALL = 2;
-
 
     private int width, height;
     private Vector2 start;
@@ -27,19 +24,17 @@ public class PrimsMaze
         maze = new int[height, width];
         distanceMatrix = new int[height, width];
 
-        distanceMatrix[(int)start.Y, (int)start.X] = 1;
+        distanceMatrix[(int)start.Y, (int)start.X] = 1; //Start is set so we can compute distances in parallel
 
         frontier.Add(start);
-        //fill(distanceMatrix, -1);
 
         Run();
+
         printGraph();
         Console.WriteLine();
-        //print2D(maze);
-        //Console.WriteLine();
+       
         print2D(distanceMatrix);
         Console.WriteLine();
-
 
         BFS bfs = new BFS();
         int[,] distanceMatrixBFS = new int[height, width];
@@ -47,8 +42,11 @@ public class PrimsMaze
         print2D(distanceMatrixBFS);
     }
 
-  
-
+    /// <summary>
+    /// Run Checks both neighbors with a distance of 2 from the original vertice.
+    /// Frontier stores the next possible paths and selects them randomly. 
+    /// After processing the frontier (now path) is removed. 
+    /// </summary>
     public void Run()
     {
         while(frontier.Count > 0)
@@ -56,14 +54,15 @@ public class PrimsMaze
             int index = rand.Next(0, frontier.Count);
             CheckOppositeNeighbors(frontier[index]);
             frontier.RemoveAt(index);
-            printGraph();
-            Console.WriteLine();
-            print2D(distanceMatrix);
-            Console.WriteLine();
         }
     }
 
-
+    /// <summary>
+    /// Checks for surrounding neighbors of distance 2 and distance 1 iff 
+    /// a location of distance 2 in a given direction is not out of bounds of 
+    /// the maze. Then distances are calculated during the computation.
+    /// </summary>
+    /// <param name="pos"></param>
     public void CheckOppositeNeighbors(Vector2 pos)
     {
         //SET FRONTIER TO PATH
@@ -94,7 +93,12 @@ public class PrimsMaze
         }
     }
 
-    //Takes a position that we already know is in range
+    /// <summary>
+    /// Builds maze in the X direction and adds the vertice to the frontier of possible paths
+    /// </summary>
+    /// <param name="x">position x that is in range</param>
+    /// <param name="y">position y that is in range</param>
+    /// <param name="sign">direction to denote whether we are moving up down left or right (-1 signifies left or up)</param>
     public void BuildMazeX(int x, int y, int sign)
     {
         //IF UNVISITED ADD TO LIST OF FRONTIER AND MAKE PATH
@@ -112,17 +116,19 @@ public class PrimsMaze
         // mark the inbetween as wall
         //IF VISITED MARK AS PATH
         else if (maze[y, x] == WALL)
-        {
             maze[y, (sign == -1) ? x + 1 : x - 1] = PATH;
            
-        } 
         //IF PATH MARK AS WALL
         else if (maze[y, x] == PATH || maze[y, x] == VISITED)
-        {
             maze[y, (sign == -1) ? x + 1 : x - 1] = (maze[y, (sign == -1) ? x + 1 : x - 1] == PATH) ? PATH : WALL;
-        }
     }
 
+    /// <summary>
+    /// Builds maze in the Y direction and adds the vertice to the frontier of possible paths
+    /// </summary>
+    /// <param name="x">position x that is in range</param>
+    /// <param name="y">position y that is in range</param>
+    /// <param name="sign">direction to denote whether we are moving up down left or right (-1 signifies left or up)</param>
     public void BuildMazeY(int x, int y, int sign)
     {
         //IF UNVISITED ADD TO LIST OF FRONTIER AND MAKE PATH
@@ -134,18 +140,21 @@ public class PrimsMaze
         }
         //IF MARKED AS WALL OR VISITED CHANGE DIRECT NEIGHBOR TO PATH
         else if (maze[y, x] == WALL)
-        {
             maze[(sign == -1) ? y + 1 : y - 1, x] = PATH;
 
-        }
         //IF PATH MARK AS WALL
         else if (maze[y, x] == PATH || maze[y, x] == VISITED)
-        {
             maze[(sign == -1) ? y + 1 : y - 1, x] = (maze[(sign == -1) ? y + 1 : y - 1, x] == PATH) ? PATH : WALL;
-        }
+
     }
 
-
+    /// <summary>
+    /// Calculates the distance of direct neighbor then opposite if they have not been set. 
+    /// </summary>
+    /// <param name="x">position x that is in range</param>
+    /// <param name="y">position y that is in range</param>
+    /// <param name="sign">direction to denote whether we are moving up down left or right (-1 signifies left or up)</param>
+    /// <param name="isX">Determines if the y or x value is being altered</param>
     public void CalculateDistance(int x, int y, int sign, bool isX)
     {
         if (isX)
@@ -166,37 +175,18 @@ public class PrimsMaze
         }
     }
 
-
-    public bool KeepInRange(float val, int bound)
-    {
-        return (val <= bound && val >= 0);
-    }
-
-
+    /// <summary>
+    /// Prints maze
+    /// </summary>
     public void printGraph()
     {
-        //Width++ because we added an extra wall at start of col
-        /*for(int i = 0; i < width + 1; i++)
-        {
-            Console.Write("|");
-        }
-        Console.WriteLine();*/
-
-        //row length
         for (int i = 0; i < height; i++)
         {
-            //col length?
             for (int j = 0; j < width; j++)
             {
-                //if (j == 0) Console.Write("|");
-                //Thread.Sleep(20);
-                if (maze[i, j] == WALL || maze[i, j] == 0)
-                    Console.Write("|");
-                else if (maze[i, j] == PATH)
-                {
-                    Console.Write((char)186);
-                }
-                else Console.Write(maze[i, j]);
+                if (maze[i, j] == WALL || maze[i, j] == 0)  Console.Write("|");
+                else if (maze[i, j] == PATH)                Console.Write((char)186);
+                else                                        Console.Write(maze[i, j]);
             }
             Console.WriteLine();
         }
@@ -208,7 +198,7 @@ public class PrimsMaze
         {
             for (int j = 0; j < graph.GetLength(1); j++)
             {
-                Console.Write(graph[i, j]);
+                Console.Write(graph[i, j] + " ");
             }
             Console.WriteLine();
         }
@@ -224,21 +214,47 @@ public class PrimsMaze
             }
         }
     }
+
+    /// <summary>
+    /// Helper function to determine if something is within the bounds of the array.
+    /// It checks if val is <= bound and if val >= 0 and returns true or false accordingly.
+    /// </summary>
+    /// <param name="val">position to test </param>
+    /// <param name="bound"></param>
+    /// <returns></returns>
+    public bool KeepInRange(float val, int bound)
+    {
+        return (val <= bound && val >= 0);
+    }
+
 }
 
 public class BFS
 {
+    int UNPROCESS = 0;
     int VISITED = 1;
     private Queue<Vector2> vertices;
 
+
+    public struct Max
+    {
+        public int Distance { get; set; }
+        public Vector2 position { get; set; }
+    }
+
+    private Max max;
     public BFS()
     {
+        max = new Max();
+        max.Distance = -1;
+
         vertices = new Queue<Vector2>();
     }
 
     public int[,] ComputeDistances(Vector2 start, int[,] graph)
     {
         int[,] distanceMatrix = new int[graph.GetLength(0), graph.GetLength(1)];
+
         vertices.Enqueue(start);
         distanceMatrix[(int)start.Y, (int)start.X] = VISITED;
 
@@ -249,10 +265,15 @@ public class BFS
 
             foreach(Vector2 v in neighbors)
             {
-                if (distanceMatrix[(int) v.Y, (int) v.X] == 0) //Unprocessed
+                if (distanceMatrix[(int) v.Y, (int) v.X] == UNPROCESS) //Unprocessed
                 {
                     vertices.Enqueue(v);
-                    distanceMatrix[(int)v.Y, (int)v.X] = (distanceMatrix[(int) currVert.Y, (int) currVert.X] + 1) % 10;
+                    if(max.Distance < distanceMatrix[(int)currVert.Y, (int)currVert.X] + 1)
+                    {
+                        max.Distance = distanceMatrix[(int)currVert.Y, (int)currVert.X] + 1;
+                        max.position = v;
+                    }
+                    distanceMatrix[(int)v.Y, (int)v.X] =  (distanceMatrix[(int) currVert.Y, (int) currVert.X] + 1) % 10;
                 }
             }
         }
@@ -270,7 +291,7 @@ public class BFS
         if(KeepInRange(pos.X - 1, graph.GetLength(1) - 1))
         {
             //If distanceMatrix vertice has not been visited and the maze has a path at that location
-            if (distanceMatrix[(int) pos.Y, (int) pos.X - 1] == 0 && graph[(int)pos.Y, (int)pos.X - 1] == 1)
+            if (distanceMatrix[(int) pos.Y, (int) pos.X - 1] == UNPROCESS && graph[(int)pos.Y, (int)pos.X - 1] == 1)
             {
                 //add to list
                 neighbors.Add(new Vector2(pos.X - 1, pos.Y));
@@ -280,7 +301,7 @@ public class BFS
         if (KeepInRange(pos.X + 1, graph.GetLength(1) - 1))
         {
             //If distanceMatrix vertice has not been visited and the maze has a path at that location
-            if (distanceMatrix[(int)pos.Y, (int)pos.X + 1] == 0 && graph[(int)pos.Y, (int)pos.X + 1] == 1)
+            if (distanceMatrix[(int)pos.Y, (int)pos.X + 1] == UNPROCESS && graph[(int)pos.Y, (int)pos.X + 1] == 1)
             {
                 //add to list
                 neighbors.Add(new Vector2(pos.X + 1, pos.Y));
@@ -289,7 +310,7 @@ public class BFS
         //check y - 1
         if (KeepInRange(pos.Y - 1, graph.GetLength(0) - 1))
         {
-            if (distanceMatrix[(int)pos.Y - 1, (int) pos.X] == 0 && graph[(int)pos.Y - 1, (int)pos.X] == 1)
+            if (distanceMatrix[(int)pos.Y - 1, (int) pos.X] == UNPROCESS && graph[(int)pos.Y - 1, (int)pos.X] == 1)
             {
                 neighbors.Add(new Vector2(pos.X, pos.Y - 1));
             }
@@ -297,7 +318,7 @@ public class BFS
         //check y + 1
         if (KeepInRange(pos.Y + 1, graph.GetLength(0) - 1))
         {
-            if (distanceMatrix[(int)pos.Y + 1, (int)pos.X] == 0 && graph[(int)pos.Y + 1, (int)pos.X] == 1)
+            if (distanceMatrix[(int)pos.Y + 1, (int)pos.X] == UNPROCESS && graph[(int)pos.Y + 1, (int)pos.X] == 1)
             {
                 neighbors.Add(new Vector2(pos.X, pos.Y + 1));
             }
@@ -306,21 +327,30 @@ public class BFS
         return neighbors;
     }
 
+    public void fill(int[,] matrix, int value)
+    {
+        for (int i = 0; i < matrix.GetLength(0); i++)
+        {
+            for (int j = 0; j < matrix.GetLength(1); j++)
+            {
+                matrix[i, j] = value;
+            }
+        }
+    }
+
 
     public bool KeepInRange(float val, int bound)
     {
         return (val <= bound && val >= 0);
     }
-
-
 }
 
 public class Program
 {
     static void Main(String[] args)
     {
-        int height = 5;
-        int width = 10;
+        int height = 50;
+        int width = 100;
         PrimsMaze prims = new PrimsMaze(width, height, new Vector2(0, 0));
 
     }
