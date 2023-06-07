@@ -33,16 +33,21 @@ public class PrimsMaze
         printGraph();
         Console.WriteLine();
        
-        print2D(distanceMatrix);
-        Console.WriteLine();
-
+        /*print2D(distanceMatrix);
+        Console.WriteLine();*/
+        
+        //BFS
         BFS bfs = new BFS();
-        int[,] distanceMatrixBFS = new int[height, width];
+        BFS.Vertice[,] distanceMatrixBFS = new BFS.Vertice[height, width];
         distanceMatrixBFS = bfs.ComputeDistances(start, maze);
-        print2D(distanceMatrixBFS);
+        /*bfs.PrintVerticeGraph(distanceMatrixBFS);*/
+        Console.WriteLine("BFS Max Distance: " + bfs.max.Distance + "\nBFS Location: " + bfs.max.position.ToString() + "\n");
 
+        maze = bfs.TracePath(distanceMatrixBFS, maze, start, bfs.max.position);
+        bfs.PrintVerticeGraphParents(distanceMatrixBFS);
 
-        Console.WriteLine("BFS Max Distance: " + bfs.max.Distance + "\nBFS Location: " + bfs.max.position.ToString());
+        Console.WriteLine();
+        printGraph();
     }
 
     /// <summary>
@@ -189,7 +194,7 @@ public class PrimsMaze
             {
                 if (maze[i, j] == WALL || maze[i, j] == 0)  Console.Write("|");
                 else if (maze[i, j] == PATH)                Console.Write((char)186);
-                else                                        Console.Write(maze[i, j]);
+                else                                        Console.Write((char) maze[i, j]);
             }
             Console.WriteLine();
         }
@@ -260,12 +265,12 @@ public class BFS
         vertices = new Queue<Vector2>();
     }
 
-    public int[,] ComputeDistances(Vector2 start, int[,] graph)
+    public Vertice[,] ComputeDistances(Vector2 start, int[,] graph)
     {
-        int[,] distanceMatrix = new int[graph.GetLength(0), graph.GetLength(1)];
+        Vertice[,] distanceMatrix = new Vertice[graph.GetLength(0), graph.GetLength(1)];
 
         vertices.Enqueue(start);
-        distanceMatrix[(int)start.Y, (int)start.X] = VISITED;
+        distanceMatrix[(int)start.Y, (int)start.X].Distance = VISITED;
 
         while(vertices.Count > 0)
         {
@@ -274,15 +279,16 @@ public class BFS
 
             foreach(Vector2 v in neighbors)
             {
-                if (distanceMatrix[(int) v.Y, (int) v.X] == UNPROCESS) //Unprocessed
+                if (distanceMatrix[(int) v.Y, (int) v.X].Distance == UNPROCESS) //Unprocessed
                 {
                     vertices.Enqueue(v);
-                    if(max.Distance < distanceMatrix[(int)currVert.Y, (int)currVert.X] + 1)
+                    if(max.Distance < distanceMatrix[(int)currVert.Y, (int)currVert.X].Distance + 1)
                     {
-                        max.Distance = distanceMatrix[(int)currVert.Y, (int)currVert.X] + 1;
+                        max.Distance = distanceMatrix[(int)currVert.Y, (int)currVert.X].Distance + 1;
                         max.position = v;
                     }
-                    distanceMatrix[(int)v.Y, (int)v.X] =  (distanceMatrix[(int) currVert.Y, (int) currVert.X] + 1);
+                    distanceMatrix[(int)v.Y, (int)v.X].Distance = (distanceMatrix[(int) currVert.Y, (int) currVert.X].Distance + 1); //Sets them as visited
+                    distanceMatrix[(int)v.Y, (int)v.X].Prev = currVert;
                 }
             }
         }
@@ -290,7 +296,7 @@ public class BFS
         return distanceMatrix;
     }
 
-    public List<Vector2> ProcessNeigbors(Vector2 pos, int[,] distanceMatrix, int[,] graph)
+    public List<Vector2> ProcessNeigbors(Vector2 pos, Vertice[,] distanceMatrix, int[,] graph)
     {
         List<Vector2> neighbors = new List<Vector2>();
         //Check if both the distanc matrix is not set and the graph at that location is a path
@@ -300,7 +306,7 @@ public class BFS
         if(KeepInRange(pos.X - 1, graph.GetLength(1) - 1))
         {
             //If distanceMatrix vertice has not been visited and the maze has a path at that location
-            if (distanceMatrix[(int) pos.Y, (int) pos.X - 1] == UNPROCESS && graph[(int)pos.Y, (int)pos.X - 1] == 1)
+            if (distanceMatrix[(int) pos.Y, (int) pos.X - 1].Distance == UNPROCESS && graph[(int)pos.Y, (int)pos.X - 1] == 1)
             {
                 //add to list
                 neighbors.Add(new Vector2(pos.X - 1, pos.Y));
@@ -310,7 +316,7 @@ public class BFS
         if (KeepInRange(pos.X + 1, graph.GetLength(1) - 1))
         {
             //If distanceMatrix vertice has not been visited and the maze has a path at that location
-            if (distanceMatrix[(int)pos.Y, (int)pos.X + 1] == UNPROCESS && graph[(int)pos.Y, (int)pos.X + 1] == 1)
+            if (distanceMatrix[(int)pos.Y, (int)pos.X + 1].Distance == UNPROCESS && graph[(int)pos.Y, (int)pos.X + 1] == 1)
             {
                 //add to list
                 neighbors.Add(new Vector2(pos.X + 1, pos.Y));
@@ -319,7 +325,7 @@ public class BFS
         //check y - 1
         if (KeepInRange(pos.Y - 1, graph.GetLength(0) - 1))
         {
-            if (distanceMatrix[(int)pos.Y - 1, (int) pos.X] == UNPROCESS && graph[(int)pos.Y - 1, (int)pos.X] == 1)
+            if (distanceMatrix[(int)pos.Y - 1, (int) pos.X].Distance == UNPROCESS && graph[(int)pos.Y - 1, (int)pos.X] == 1)
             {
                 neighbors.Add(new Vector2(pos.X, pos.Y - 1));
             }
@@ -327,7 +333,7 @@ public class BFS
         //check y + 1
         if (KeepInRange(pos.Y + 1, graph.GetLength(0) - 1))
         {
-            if (distanceMatrix[(int)pos.Y + 1, (int)pos.X] == UNPROCESS && graph[(int)pos.Y + 1, (int)pos.X] == 1)
+            if (distanceMatrix[(int)pos.Y + 1, (int)pos.X].Distance == UNPROCESS && graph[(int)pos.Y + 1, (int)pos.X] == 1)
             {
                 neighbors.Add(new Vector2(pos.X, pos.Y + 1));
             }
@@ -344,6 +350,55 @@ public class BFS
             {
                 matrix[i, j] = value;
             }
+        }
+    }
+
+    public int[,] GetPath(Vertice[,] distanceMatrix, int[,] maze, Vector2 end)
+    {
+        int[,] pathTraceGraph = new int[maze.GetLength(0), maze.GetLength(1)];
+        //Start at end, back trac through predecessors changing value allong the way
+
+
+
+
+        return pathTraceGraph;
+    }
+    //Back track
+    public int[,] TracePath(Vertice[,] distanceMatrix, int[,] maze, Vector2 start, Vector2 end, char pathChar = '*')
+    {
+        if (end != start)
+        {
+            maze[(int)end.Y, (int)end.X] = pathChar; //Set maze value to a given char
+            //Recursive call to mark the new end as the parent vertice of the current end
+            return TracePath(distanceMatrix, maze, start, distanceMatrix[(int)end.Y, (int)end.X].Prev);
+        }
+        //Set start value to pathChar
+        maze[(int)end.Y, (int)end.X] = pathChar;
+        return maze;
+    }
+
+
+    public void PrintVerticeGraph(Vertice[,] graph)
+    {
+        for (int i = 0; i < graph.GetLength(0); i++)
+        {
+            for (int j = 0; j < graph.GetLength(1); j++)
+            {
+                Console.Write(graph[i, j].Distance);
+            }
+            Console.WriteLine();
+        }
+    }
+
+    public void PrintVerticeGraphParents(Vertice[,] graph)
+    {
+        for (int i = 0; i < graph.GetLength(0); i++)
+        {
+            for (int j = 0; j < graph.GetLength(1); j++)
+            {
+                Console.Write(graph[i, j].Prev.ToString() + "\t");
+            }
+            Console.WriteLine();
         }
     }
 
