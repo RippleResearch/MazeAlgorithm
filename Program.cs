@@ -1,4 +1,6 @@
-﻿using System.Numerics;
+﻿using System.Diagnostics;
+using System.Numerics;
+using System.Runtime.Intrinsics;
 
 public class PrimsMaze
 {
@@ -9,7 +11,6 @@ public class PrimsMaze
 
     private int width, height;
     private List<Vector2> frontier;
-    private int[,] distanceMatrix;
 
     private Random rand;
 
@@ -23,9 +24,6 @@ public class PrimsMaze
         rand = new Random();
         frontier = new List<Vector2>();
         maze = new int[height, width];
-        distanceMatrix = new int[height, width];
-
-        distanceMatrix[(int)start.Y + 1, (int)start.X + 1] = 1; //Start is set so we can compute distances in parallel
 
         frontier.Add(start);
 
@@ -195,7 +193,7 @@ public class BFS
     int VISITED = 1;
     private Queue<Vector2> vertices;
 
-    public struct Vertice
+    public struct Vertex
     {
         public int Turns { get; set; }
         public int Distance { get; set; }
@@ -205,8 +203,8 @@ public class BFS
         public Vector2 Loc { get; set; }  
     }
 
-    public Vertice maxDistance;
-    public Vertice maxTurns;
+    public Vertex maxDistance;
+    public Vertex maxTurns;
     public BFS()
     {
         
@@ -216,9 +214,9 @@ public class BFS
         vertices = new Queue<Vector2>();
     }
 
-    public Vertice[,] ComputeDistances(Vector2 start, int[,] graph)
+    public Vertex[,] ComputeDistances(Vector2 start, int[,] graph)
     {
-        Vertice[,] distanceMatrix = new Vertice[graph.GetLength(0), graph.GetLength(1)];
+        Vertex[,] distanceMatrix = new Vertex[graph.GetLength(0), graph.GetLength(1)];
 
         vertices.Enqueue(start);
         distanceMatrix[(int)start.Y, (int)start.X].Distance = VISITED;
@@ -262,7 +260,7 @@ public class BFS
         return distanceMatrix;
     }
 
-    public List<Vector2> ProcessNeigbors(Vector2 pos, Vertice[,] distanceMatrix, int[,] graph)
+    public List<Vector2> ProcessNeigbors(Vector2 pos, Vertex[,] distanceMatrix, int[,] graph)
     {
         List<Vector2> neighbors = new List<Vector2>();
         //Check if both the distanc matrix is not set and the graph at that location is a path
@@ -308,18 +306,26 @@ public class BFS
         return neighbors;
     }
 
-    public int[,] GetPath(Vertice[,] distanceMatrix, int[,] maze, Vector2 end)
+    /// <summary>
+    /// Method so we can implement back tracting in the future
+    /// </summary>
+    /// <param name="distanceMatrix"></param>
+    /// <param name="maze"></param>
+    /// <param name="end"></param>
+    /// <returns></returns>
+    public Vector2 TracePath(Vertex[,] distanceMatrix, int[,] maze, Vector2 start, Vector2 end)
     {
-        int[,] pathTraceGraph = new int[maze.GetLength(0), maze.GetLength(1)];
-        //Start at end, back trac through predecessors changing value allong the way
-
-
-
-
-        return pathTraceGraph;
+        if (end != start)
+        { 
+            //Recursive call to mark the new end as the parent vertice of the current end
+            return TracePath(distanceMatrix, maze, start, distanceMatrix[(int)end.Y, (int)end.X].Prev);
+        }
+        return end;//essentially returns start
     }
+
+
     //Back track
-    public int[,] TracePath(Vertice[,] distanceMatrix, int[,] maze, Vector2 start, Vector2 end, char pathChar = '@')
+    public int[,] TracePath(Vertex[,] distanceMatrix, int[,] maze, Vector2 start, Vector2 end, char pathChar = '@')
     {
         if (end != start)
         {
@@ -333,8 +339,19 @@ public class BFS
         return maze;
     }
 
+    public Vector2 GetEnd()
+    {
+        return maxDistance.Loc;
+    }
 
-    public void PrintVerticeTurns(Vertice[,] graph)
+    public Vector2 ComputeAndGetEnd(Vector2 start, int[,] maze)
+    {
+        ComputeDistances(start, maze);
+        return maxDistance.Loc;
+    }
+
+
+    public void PrintVerticeTurns(Vertex[,] graph)
     {
         for (int i = 0; i < graph.GetLength(0); i++)
         {
@@ -345,7 +362,7 @@ public class BFS
             Console.WriteLine();
         }
     }
-    public void PrintVerticeDistance(Vertice[,] graph)
+    public void PrintVerticeDistance(Vertex[,] graph)
     {
         for (int i = 0; i < graph.GetLength(0); i++)
         {
@@ -357,7 +374,7 @@ public class BFS
         }
     }
 
-    public void PrintVerticeGraphParents(Vertice[,] graph)
+    public void PrintVerticeGraphParents(Vertex[,] graph)
     {
         for (int i = 0; i < graph.GetLength(0); i++)
         {
@@ -389,7 +406,7 @@ public class Program
 
         //BFS
         BFS bfs = new BFS();
-        BFS.Vertice[,] distanceMatrixBFS = new BFS.Vertice[height, width];
+        BFS.Vertex[,] distanceMatrixBFS = new BFS.Vertex[height, width];
         distanceMatrixBFS = bfs.ComputeDistances(prims.start, prims.maze);
 
         //Back Track Path
