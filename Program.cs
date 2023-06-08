@@ -16,16 +16,27 @@ public class PrimsMaze
 
     public Vector2 start { get; set; }
     public int[,] maze { get; set; }
-    public PrimsMaze(int width, int height, Vector2 start) { 
+
+    public PrimsMaze(int width, int height, Vector2 start, bool guranteeBounds = true)
+    {
+        if (guranteeBounds)
+        {
+            if (width % 2 == 1 || height % 2 == 1) { throw new FormatException("When using bounds width and height must be even!"); }
+            width++; height++; start.X++; start.Y++;
+        }
+        else if(!guranteeBounds && (width % 2 != 1 || height % 2 != 1)) { throw new FormatException("When NOT using bounds width and height must be odd!"); }
+        
         this.width = width;
         this.height = height;
-        this.start = start;
+        this.start = new Vector2(start.X, start.Y);
 
         rand = new Random();
         frontier = new List<Vector2>();
-        maze = new int[height, width];
+        Console.WriteLine(height);
+        maze = new int[this.height, this.width];
+        Console.WriteLine(height);
 
-        frontier.Add(start);
+        frontier.Add(new Vector2(this.start.Y, this.start.X));
 
         Run();
     }
@@ -205,6 +216,7 @@ public class BFS
 
     public Vertex maxDistance;
     public Vertex maxTurns;
+    public Vertex[,] distanceMatrix;
     public BFS()
     {
         
@@ -216,7 +228,7 @@ public class BFS
 
     public Vertex[,] ComputeDistances(Vector2 start, int[,] graph)
     {
-        Vertex[,] distanceMatrix = new Vertex[graph.GetLength(0), graph.GetLength(1)];
+        distanceMatrix = new Vertex[graph.GetLength(0), graph.GetLength(1)];
 
         vertices.Enqueue(start);
         distanceMatrix[(int)start.Y, (int)start.X].Distance = VISITED;
@@ -307,7 +319,7 @@ public class BFS
     }
 
     /// <summary>
-    /// Method so we can implement back tracting in the future
+    /// Method so we can implement back tracking in the game 
     /// </summary>
     /// <param name="distanceMatrix"></param>
     /// <param name="maze"></param>
@@ -397,10 +409,10 @@ public class Program
 {
     static void Main(String[] args)
     {
-        int height = 20;
-        int width = 100;
+        int height = 21;
+        int width = 101;
         Vector2 start = new Vector2(0, 0);
-        PrimsMaze prims = new PrimsMaze(width, height, start);
+        PrimsMaze prims = new PrimsMaze(width, height, start, false);
         prims.printGraph();
         Console.WriteLine();
 
@@ -413,7 +425,7 @@ public class Program
         prims.maze = bfs.TracePath(distanceMatrixBFS, prims.maze, prims.start, bfs.maxDistance.Loc, pathChar: '@');
         Console.WriteLine("BFS Max Distance: " + bfs.maxDistance.Distance + "\nMax Distance Turns: " + bfs.maxDistance.Turns + "\nMax distance end loc: " + bfs.maxDistance.Loc.ToString());
         //Set start and End
-        prims.maze[(int)start.Y, (int)start.X] = '$';
+        prims.maze[(int)prims.start.Y, (int)prims.start.X] = '$';
         prims.maze[(int)bfs.maxDistance.Loc.Y, (int)bfs.maxDistance.Loc.X] = '$';
         prims.printGraph();
 
