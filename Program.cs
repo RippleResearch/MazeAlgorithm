@@ -25,7 +25,7 @@ public class PrimsMaze
         maze = new int[height, width];
         distanceMatrix = new int[height, width];
 
-        distanceMatrix[(int)start.Y, (int)start.X] = 1; //Start is set so we can compute distances in parallel
+        distanceMatrix[(int)start.Y + 1, (int)start.X + 1] = 1; //Start is set so we can compute distances in parallel
 
         frontier.Add(start);
 
@@ -60,26 +60,22 @@ public class PrimsMaze
         //CHECK IF OPPOSITE NEIGBOR IS WITHIN BOUNDS
         if (KeepInRange(pos.X - 2, width - 1))
         {
-            BuildMazeX((int)pos.X - 2, (int)pos.Y, -1);
-            CalculateDistance((int)pos.X - 2, (int)pos.Y, -1, true);
+            BuildMazeX((int)pos.X - 2, (int)pos.Y, -1);            
         }
 
         if (KeepInRange(pos.X + 2, width - 1))
         {
             BuildMazeX((int)pos.X + 2, (int)pos.Y, 1);
-            CalculateDistance((int)pos.X + 2, (int)pos.Y, 1, true);
         }
 
         if (KeepInRange(pos.Y - 2, height - 1))
         {
-            BuildMazeY((int)pos.X, (int)pos.Y - 2, -1);
-            CalculateDistance((int)pos.X, (int)pos.Y - 2, -1, false);
+            BuildMazeY((int)pos.X, (int)pos.Y - 2, -1);  
         }
 
         if (KeepInRange(pos.Y + 2, height - 1))
         {
             BuildMazeY((int)pos.X, (int)pos.Y + 2, 1);
-            CalculateDistance((int)pos.X, (int)pos.Y + 2, 1, false);
         }
     }
 
@@ -138,32 +134,6 @@ public class PrimsMaze
 
     }
 
-    /// <summary>
-    /// Calculates the distance of direct neighbor then opposite if they have not been set. 
-    /// </summary>
-    /// <param name="x">position x that is in range</param>
-    /// <param name="y">position y that is in range</param>
-    /// <param name="sign">direction to denote whether we are moving up down left or right (-1 signifies left or up)</param>
-    /// <param name="isX">Determines if the y or x value is being altered</param>
-    public void CalculateDistance(int x, int y, int sign, bool isX)
-    {
-        if (isX)
-        {
-            //If the value has not been set (use sign to see if subtracting or adding)
-            if (distanceMatrix[y, (sign == -1) ? x + 1 : x - 1] == 0)
-                //Then set it to one plus the previous value in the direction of the original vertice
-                distanceMatrix[y, (sign == -1) ? x + 1 : x - 1] = (distanceMatrix[y, (sign == -1) ? x + 2 : x - 2] + 1) % 10; // mod 10?
-            if (distanceMatrix[y, x] == 0)
-                distanceMatrix[y, x] = (distanceMatrix[y, (sign == -1) ? x + 1 : x - 1] + 1) % 10;
-        }
-        else
-        {
-            if (distanceMatrix[(sign == - 1) ? y + 1 : y - 1, x] == 0)
-                distanceMatrix[(sign == -1) ? y + 1 : y - 1, x] = (distanceMatrix[(sign == -1) ? y + 2 : y - 2, x] + 1) % 10;
-            if (distanceMatrix[y, x] == 0)
-                distanceMatrix[y, x] = (distanceMatrix[(sign == -1) ? y + 1 : y - 1, x] + 1) % 10;
-        }
-    }
 
     /// <summary>
     /// Prints maze
@@ -430,12 +400,12 @@ public class Program
         prims.maze[(int)bfs.maxDistance.Loc.Y, (int)bfs.maxDistance.Loc.X] = '$';
         prims.printGraph();
 
-        prims.maze = bfs.TracePath(distanceMatrixBFS, prims.maze, prims.start, bfs.maxTurns.Loc, pathChar: '&');
+        /*prims.maze = bfs.TracePath(distanceMatrixBFS, prims.maze, prims.start, bfs.maxTurns.Loc, pathChar: '&');
         Console.WriteLine();
         Console.Write("Max Turns Distance: " + bfs.maxTurns.Distance + "\nMax Turns Value: " + bfs.maxTurns.Turns + "\nMax turns end loc: " + bfs.maxTurns.Loc.ToString() + "\n");
         prims.maze[(int)start.Y, (int)start.X] = '$';
         prims.maze[(int)bfs.maxTurns.Loc.Y, (int)bfs.maxTurns.Loc.X] = '$';
-        prims.printGraph();
+        prims.printGraph();*/
 
 
     }
