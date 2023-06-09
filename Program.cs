@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Numerics;
-using System.Runtime.Intrinsics;
+﻿using System.Numerics;
 
 public class PrimsMaze
 {
@@ -21,10 +19,14 @@ public class PrimsMaze
     {
         if (guranteeBounds)
         {
-            if (width % 2 == 1 || height % 2 == 1) { throw new FormatException("When using bounds width and height must be even!"); }
+            if (width % 2 == 1 || height % 2 == 1) { 
+                throw new FormatException("When using bounds width and height must be even!"); 
+            }
             width++; height++; start.X++; start.Y++;
         }
-        else if(!guranteeBounds && (width % 2 != 1 || height % 2 != 1)) { throw new FormatException("When NOT using bounds width and height must be odd!"); }
+        else if(!guranteeBounds && (width % 2 == 0 || height % 2 == 0)) { 
+            throw new FormatException("When NOT using bounds width and height must be odd!"); 
+        }
         
         this.width = width;
         this.height = height;
@@ -42,9 +44,9 @@ public class PrimsMaze
     }
 
     /// <summary>
-    /// Run Checks both neighbors with a distance of 2 from the original vertice.
-    /// Frontier stores the next possible paths and selects them randomly. 
-    /// After processing the frontier (now path) is removed. 
+    /// Run checks both neighbors with a distance of 2 from the original vertex.
+    /// Frontier stores the next possible paths and processes them randomly. 
+    /// After processing the frontier (the now path) is removed. 
     /// </summary>
     public void Run()
     {
@@ -57,9 +59,9 @@ public class PrimsMaze
     }
 
     /// <summary>
-    /// Checks for surrounding neighbors of distance 2 and distance 1 iff 
-    /// a location of distance 2 in a given direction is not out of bounds of 
-    /// the maze. Then distances are calculated during the computation.
+    /// Sets the given frontier to pathand then checks for surrounding neighbors 
+    /// of distance 2 and distance 1 iff a location of distance 2 in a given direction 
+    /// is not out of bounds of the maze.
     /// </summary>
     /// <param name="pos"></param>
     public void CheckOppositeNeighbors(Vector2 pos)
@@ -89,7 +91,8 @@ public class PrimsMaze
     }
 
     /// <summary>
-    /// Builds maze in the X direction and adds the vertice to the frontier of possible paths
+    /// Builds maze in the +X or -X direction and adds the vertex to the frontier of possible paths
+    /// iff vertex is unvisited.
     /// </summary>
     /// <param name="x">position x that is in range</param>
     /// <param name="y">position y that is in range</param>
@@ -109,17 +112,13 @@ public class PrimsMaze
         }
         // If it is unvisited it is either a path, wall or marked as visited if it is a path,
         // mark the inbetween as wall
-        //IF VISITED MARK AS PATH
+        //IF MARKED AS WALL CHANGE DIRECT NEIGHBOR TO PATH
         else if (maze[y, x] == WALL)
             maze[y, (sign == -1) ? x + 1 : x - 1] = PATH;
-           
-        //IF PATH MARK AS WALL
-        else if (maze[y, x] == PATH || maze[y, x] == VISITED)
-            maze[y, (sign == -1) ? x + 1 : x - 1] = (maze[y, (sign == -1) ? x + 1 : x - 1] == PATH) ? PATH : WALL;
     }
 
     /// <summary>
-    /// Builds maze in the Y direction and adds the vertice to the frontier of possible paths
+    /// Builds maze in the Y direction and adds the vertex to the frontier of possible paths
     /// </summary>
     /// <param name="x">position x that is in range</param>
     /// <param name="y">position y that is in range</param>
@@ -133,20 +132,25 @@ public class PrimsMaze
             frontier.Add(new Vector2(x, y));
             maze[y, x] = VISITED;
         }
-        //IF MARKED AS WALL OR VISITED CHANGE DIRECT NEIGHBOR TO PATH
+        //IF MARKED AS WALL CHANGE DIRECT NEIGHBOR TO PATH
         else if (maze[y, x] == WALL)
             maze[(sign == -1) ? y + 1 : y - 1, x] = PATH;
+    }
 
-        //IF PATH MARK AS WALL
-        else if (maze[y, x] == PATH || maze[y, x] == VISITED)
-            maze[(sign == -1) ? y + 1 : y - 1, x] = (maze[(sign == -1) ? y + 1 : y - 1, x] == PATH) ? PATH : WALL;
-
+    /// <summary>
+    /// Helper function to determine if something is within the bounds of the array.
+    /// It checks if val is <= bound and if val >= 0 and returns true or false accordingly.
+    /// </summary>
+    /// <param name="val">position to test </param>
+    /// <param name="bound"></param>
+    /// <returns></returns>
+    public bool KeepInRange(float val, int bound)
+    {
+        return (val <= bound && val >= 0);
     }
 
 
-    /// <summary>
-    /// Prints maze
-    /// </summary>
+    /////////////////////////////////////DEBUG PRINT METHODS////////////////////////////////////////
     public void printGraph()
     {
         for (int i = 0; i < height; i++)
@@ -183,21 +187,19 @@ public class PrimsMaze
             }
         }
     }
-
-    /// <summary>
-    /// Helper function to determine if something is within the bounds of the array.
-    /// It checks if val is <= bound and if val >= 0 and returns true or false accordingly.
-    /// </summary>
-    /// <param name="val">position to test </param>
-    /// <param name="bound"></param>
-    /// <returns></returns>
-    public bool KeepInRange(float val, int bound)
-    {
-        return (val <= bound && val >= 0);
-    }
-
+    /////////////////////////////////////END DEBUG PRINT METHODS////////////////////////////////////
 }
-
+/// <summary>
+/// Breadth First Search class to evalutate all possible
+/// continuous paths from the starting location. This Class 
+/// gives methods that will return the ending location as well
+/// as recursivley trace a path from end to start. It also can 
+/// return a 2D Array of Vertex Structs which contain their location
+/// in the array and the location of their parent (for recursive path tracing). 
+/// 
+/// Implemented this pseudo code:
+/// https://www.geeksforgeeks.org/breadth-first-search-or-bfs-for-a-graph/
+/// </summary>
 public class BFS
 {
     int UNPROCESS = 0;
@@ -209,23 +211,26 @@ public class BFS
         public int Turns { get; set; }
         public int Distance { get; set; }
         public Vector2 Prev { get; set; }
-        
-        //For Max Value
         public Vector2 Loc { get; set; }  
     }
-
-    public Vertex maxDistance;
-    public Vertex maxTurns;
     public Vertex[,] distanceMatrix;
+
+    //Max distance vertex is a copy of the longest distance which allows us 
+    //to find the end by referencing this vertex. 
+    public Vertex maxDistance;
+    //Max turns was another implementation used to attempt to create more
+    //complex mazes, however, the longest past found by tracing Max Distances
+    //location to the start seems to be the better apporach. 
+    public Vertex maxTurns;
     public BFS()
     {
-        
         maxDistance.Distance = -1;
         maxTurns.Turns = -1;
 
         vertices = new Queue<Vector2>();
     }
 
+    //BFS implementation
     public Vertex[,] ComputeDistances(Vector2 start, int[,] graph)
     {
         distanceMatrix = new Vertex[graph.GetLength(0), graph.GetLength(1)];
@@ -272,6 +277,13 @@ public class BFS
         return distanceMatrix;
     }
 
+    /// <summary>
+    /// BFS Process Neighbors with the needed constraints for the Maze
+    /// </summary>
+    /// <param name="pos"> Current vertex </param>
+    /// <param name="distanceMatrix"> 2D array of Vertices that contains information on distances </param>
+    /// <param name="graph"> maze graph </param>
+    /// <returns></returns>
     public List<Vector2> ProcessNeigbors(Vector2 pos, Vertex[,] distanceMatrix, int[,] graph)
     {
         List<Vector2> neighbors = new List<Vector2>();
@@ -321,9 +333,10 @@ public class BFS
     /// <summary>
     /// Method so we can implement back tracking in the game 
     /// </summary>
-    /// <param name="distanceMatrix"></param>
-    /// <param name="maze"></param>
-    /// <param name="end"></param>
+    /// <param name="distanceMatrix"> 2D array of Vertices that contains information on distances </param>
+    /// <param name="maze">the final maze graph</param>
+    /// <param name="start"> Original starting location of the maze creation </param>
+    /// <param name="end"> the location of the longest path or the maximum distance from the node</param>
     /// <returns></returns>
     public Vector2 TracePath(Vertex[,] distanceMatrix, int[,] maze, Vector2 start, Vector2 end)
     {
@@ -336,7 +349,15 @@ public class BFS
     }
 
 
-    //Back track
+    /// <summary>
+    ///  Method to visualize the path by changing the traced path to a different ascii chacater
+    /// </summary>
+    /// <param name="distanceMatrix"> 2D array of Vertices that contains information on distances </param>
+    /// <param name="maze">the final maze graph</param>
+    /// <param name="start"> Original starting location of the maze creation </param>
+    /// <param name="end"> the location of the longest path or the maximum distance from the node</param>
+    /// <param name="pathChar"> Ascii value to change the path to within the maze for printing. Default is @ </param>
+    /// <returns></returns>
     public int[,] TracePath(Vertex[,] distanceMatrix, int[,] maze, Vector2 start, Vector2 end, char pathChar = '@')
     {
         if (end != start)
@@ -351,18 +372,43 @@ public class BFS
         return maze;
     }
 
+    /// <summary>
+    /// Return the vertice's location with the maximum distance
+    /// from the start of the maze
+    /// </summary>
+    /// <returns></returns>
     public Vector2 GetEnd()
     {
         return maxDistance.Loc;
     }
 
+    /// <summary>
+    /// Simplified function to run BFS and just return the maze.
+    /// All relevant fields will still be updated upon use of this
+    /// method. 
+    /// </summary>
+    /// <param name="start"> Origin of the maze creation </param>
+    /// <param name="maze"> Already generated maze for paths to be evaluated </param>
+    /// <returns></returns>
     public Vector2 ComputeAndGetEnd(Vector2 start, int[,] maze)
     {
         ComputeDistances(start, maze);
         return maxDistance.Loc;
     }
 
+    /// <summary>
+    /// Helper function to determine if something is within the bounds of the array.
+    /// It checks if val is <= bound and if val >= 0 and returns true or false accordingly.
+    /// </summary>
+    /// <param name="val">position to test </param>
+    /// <param name="bound"></param>
+    /// <returns></returns>
+    public bool KeepInRange(float val, int bound)
+    {
+        return (val <= bound && val >= 0);
+    }
 
+    /////////////////////////////////////DEBUG PRINT METHODS////////////////////////////////////////
     public void PrintVerticeTurns(Vertex[,] graph)
     {
         for (int i = 0; i < graph.GetLength(0); i++)
@@ -397,22 +443,17 @@ public class BFS
             Console.WriteLine();
         }
     }
-
-
-    public bool KeepInRange(float val, int bound)
-    {
-        return (val <= bound && val >= 0);
-    }
+    /////////////////////////////////////END DEBUG PRINT METHODS////////////////////////////////////
 }
 
 public class Program
 {
     static void Main(String[] args)
     {
-        int height = 21;
+        int height = 35;
         int width = 101;
         Vector2 start = new Vector2(0, 0);
-        PrimsMaze prims = new PrimsMaze(width, height, start, false);
+        PrimsMaze prims = new PrimsMaze(width, height, start, guranteeBounds: false);
         prims.printGraph();
         Console.WriteLine();
 
