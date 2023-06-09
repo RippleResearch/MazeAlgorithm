@@ -34,11 +34,9 @@ public class PrimsMaze
 
         rand = new Random();
         frontier = new List<Vector2>();
-        Console.WriteLine(height);
         maze = new int[this.height, this.width];
-        Console.WriteLine(height);
 
-        frontier.Add(new Vector2(this.start.Y, this.start.X));
+        frontier.Add(this.start);
 
         Run();
     }
@@ -202,8 +200,7 @@ public class PrimsMaze
 /// </summary>
 public class BFS
 {
-    int UNPROCESS = 0;
-    int VISITED = 1;
+    int UNPROCESSED = 0;
     private Queue<Vector2> vertices;
 
     public struct Vertex
@@ -236,7 +233,6 @@ public class BFS
         distanceMatrix = new Vertex[graph.GetLength(0), graph.GetLength(1)];
 
         vertices.Enqueue(start);
-        distanceMatrix[(int)start.Y, (int)start.X].Distance = VISITED;
 
         while(vertices.Count > 0)
         {
@@ -245,7 +241,7 @@ public class BFS
 
             foreach(Vector2 v in neighbors)
             {
-                if (distanceMatrix[(int) v.Y, (int) v.X].Distance == UNPROCESS) //Unprocessed
+                if (distanceMatrix[(int) v.Y, (int) v.X].Distance == UNPROCESSED) //Unprocessed
                 {
                     vertices.Enqueue(v);
                     
@@ -294,7 +290,7 @@ public class BFS
         if(KeepInRange(pos.X - 1, graph.GetLength(1) - 1))
         {
             //If distanceMatrix vertice has not been visited and the maze has a path at that location
-            if (distanceMatrix[(int) pos.Y, (int) pos.X - 1].Distance == UNPROCESS && graph[(int)pos.Y, (int)pos.X - 1] == 1)
+            if (distanceMatrix[(int) pos.Y, (int) pos.X - 1].Distance == UNPROCESSED && graph[(int)pos.Y, (int)pos.X - 1] == 1)
             {
                 //add to list
                 neighbors.Add(new Vector2(pos.X - 1, pos.Y));
@@ -304,7 +300,7 @@ public class BFS
         if (KeepInRange(pos.X + 1, graph.GetLength(1) - 1))
         {
             //If distanceMatrix vertice has not been visited and the maze has a path at that location
-            if (distanceMatrix[(int)pos.Y, (int)pos.X + 1].Distance == UNPROCESS && graph[(int)pos.Y, (int)pos.X + 1] == 1)
+            if (distanceMatrix[(int)pos.Y, (int)pos.X + 1].Distance == UNPROCESSED && graph[(int)pos.Y, (int)pos.X + 1] == 1)
             {
                 //add to list
                 neighbors.Add(new Vector2(pos.X + 1, pos.Y));
@@ -313,7 +309,7 @@ public class BFS
         //check y - 1
         if (KeepInRange(pos.Y - 1, graph.GetLength(0) - 1))
         {
-            if (distanceMatrix[(int)pos.Y - 1, (int) pos.X].Distance == UNPROCESS && graph[(int)pos.Y - 1, (int)pos.X] == 1)
+            if (distanceMatrix[(int)pos.Y - 1, (int) pos.X].Distance == UNPROCESSED && graph[(int)pos.Y - 1, (int)pos.X] == 1)
             {
                 neighbors.Add(new Vector2(pos.X, pos.Y - 1));
             }
@@ -321,7 +317,7 @@ public class BFS
         //check y + 1
         if (KeepInRange(pos.Y + 1, graph.GetLength(0) - 1))
         {
-            if (distanceMatrix[(int)pos.Y + 1, (int)pos.X].Distance == UNPROCESS && graph[(int)pos.Y + 1, (int)pos.X] == 1)
+            if (distanceMatrix[(int)pos.Y + 1, (int)pos.X].Distance == UNPROCESSED && graph[(int)pos.Y + 1, (int)pos.X] == 1)
             {
                 neighbors.Add(new Vector2(pos.X, pos.Y + 1));
             }
@@ -333,7 +329,7 @@ public class BFS
     /// <summary>
     /// Method so we can implement back tracking in the game 
     /// </summary>
-    /// <param name="distanceMatrix"> 2D array of Vertices that contains information on distances </param>
+    /// <param name="distanceMatrix"> 2D array of Vertices that contains information on any given vertex </param>
     /// <param name="maze">the final maze graph</param>
     /// <param name="start"> Original starting location of the maze creation </param>
     /// <param name="end"> the location of the longest path or the maximum distance from the node</param>
@@ -352,7 +348,7 @@ public class BFS
     /// <summary>
     ///  Method to visualize the path by changing the traced path to a different ascii chacater
     /// </summary>
-    /// <param name="distanceMatrix"> 2D array of Vertices that contains information on distances </param>
+    /// <param name="distanceMatrix"> 2D array of Vertices that contains information on any given vertex </param>
     /// <param name="maze">the final maze graph</param>
     /// <param name="start"> Original starting location of the maze creation </param>
     /// <param name="end"> the location of the longest path or the maximum distance from the node</param>
@@ -450,10 +446,10 @@ public class Program
 {
     static void Main(String[] args)
     {
-        int height = 35;
-        int width = 101;
+        int height = 8;
+        int width = 8;
         Vector2 start = new Vector2(0, 0);
-        PrimsMaze prims = new PrimsMaze(width, height, start, guranteeBounds: false);
+        PrimsMaze prims = new PrimsMaze(width, height, start, guranteeBounds: true);
         prims.printGraph();
         Console.WriteLine();
 
