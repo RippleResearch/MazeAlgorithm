@@ -61,7 +61,23 @@ To use this program as is, all one needs to do is the following:
 *This is essentially a shortcut method that will run ComputeDistances to load a 2D array called distanceMatrix in the bfs object, it will then trace the path and update the maze with the given integer value (default int val = 2) to define a path from the start to the longest point.*
 
 An example may look something like this:
-![Main Example](/Assets/Main-Example.png)
+```
+int height = 31;
+int width = 101;
+Vector2 start = new Vector2(0, 0);
+PrimsMaze prims = new PrimsMaze(width, height, start, guaranteeBounds: false);
+prims.printGraph();
+Console.WriteLine();
+//BFS
+BFS bfs = new BFS();
+bfs.ComputeAndGetEnd(prims.start, prims.maze, finalPathValue: 2);
+//Set Start and End
+Console.WriteLine("BFS Max Distance: " + bfs.maxDistance.Distance + "\nMax Distance Turns: " + bfs.maxDistance.Turns + "\nMax distance end loc: " + bfs.maxDistance.Loc.ToString());
+//Set start and End
+ prims.maze[(int)prims.start.Y, (int)prims.start.X] = '$';
+ prims.maze[(int)bfs.maxDistance.Loc.Y, (int)bfs.maxDistance.Loc.X] = '$';
+ prims.printGraph();
+```
 
 This will output something similar to the following:
 ![Run Example](/Assets/Run-Example.png)
