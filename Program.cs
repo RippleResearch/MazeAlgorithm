@@ -2,10 +2,8 @@
 
 public class PrimsMaze
 {
-    int UNVISITED = 0;
-    int VISITED = 3;
+    int WALL = 0;
     int PATH = 1;
-    int WALL = 2;
 
     private int width, height;
     private List<Vector2> frontier;
@@ -15,16 +13,16 @@ public class PrimsMaze
     public Vector2 start { get; set; }
     public int[,] maze { get; set; }
 
-    public PrimsMaze(int width, int height, Vector2 start, bool guranteeBounds = true)
+    public PrimsMaze(int width, int height, Vector2 start, bool guaranteeBounds = false)
     {
-        if (guranteeBounds)
+        if (guaranteeBounds)
         {
             if (width % 2 == 1 || height % 2 == 1) { 
                 throw new FormatException("When using bounds width and height must be even!"); 
             }
             width++; height++; start.X++; start.Y++;
         }
-        else if(!guranteeBounds && (width % 2 == 0 || height % 2 == 0)) { 
+        else if(!guaranteeBounds && (width % 2 == 0 || height % 2 == 0)) { 
             throw new FormatException("When NOT using bounds width and height must be odd!"); 
         }
         
@@ -64,8 +62,6 @@ public class PrimsMaze
     /// <param name="pos"></param>
     public void CheckOppositeNeighbors(Vector2 pos)
     {
-        //SET FRONTIER TO PATH
-        maze[(int)pos.Y, (int)pos.X] = PATH;
         //CHECK IF OPPOSITE NEIGBOR IS WITHIN BOUNDS
         if (KeepInRange(pos.X - 2, width - 1))
         {
@@ -97,8 +93,8 @@ public class PrimsMaze
     /// <param name="sign">direction to denote whether we are moving up down left or right (-1 signifies left or up)</param>
     public void BuildMazeX(int x, int y, int sign)
     {
-        //IF UNVISITED ADD TO LIST OF FRONTIER AND MAKE PATH
-        if (maze[y, x] == UNVISITED)
+        //IF WALL ADD TO LIST OF FRONTIER AND MAKE PATH
+        if (maze[y, x] == WALL)
         {
             //If sign is negative 1 then we have checked -2 to the left
             //And therefore need to change the path only 1 to the left
@@ -106,13 +102,8 @@ public class PrimsMaze
             //subtract 1
             maze[y, (sign == -1) ? x + 1 : x - 1] = PATH; //Set direct neighbor to path
             frontier.Add(new Vector2(x, y)); //Add opposite neibor to list of possibe frontier
-            maze[y, x] = VISITED; //add opposite neighbor to visited and now possible frontier
+            maze[y, x] = PATH; //add opposite neighbor to visited and now possible frontier
         }
-        // If it is unvisited it is either a path, wall or marked as visited if it is a path,
-        // mark the inbetween as wall
-        //IF MARKED AS WALL CHANGE DIRECT NEIGHBOR TO PATH
-        else if (maze[y, x] == WALL)
-            maze[y, (sign == -1) ? x + 1 : x - 1] = PATH;
     }
 
     /// <summary>
@@ -123,16 +114,13 @@ public class PrimsMaze
     /// <param name="sign">direction to denote whether we are moving up down left or right (-1 signifies left or up)</param>
     public void BuildMazeY(int x, int y, int sign)
     {
-        //IF UNVISITED ADD TO LIST OF FRONTIER AND MAKE PATH
-        if (maze[y, x] == UNVISITED)
+        //IF WALL ADD TO LIST OF FRONTIER AND MAKE PATH
+        if (maze[y, x] == WALL)
         {
             maze[(sign == -1) ? y + 1 : y - 1, x] = PATH;
             frontier.Add(new Vector2(x, y));
-            maze[y, x] = VISITED;
+            maze[y, x] = PATH;
         }
-        //IF MARKED AS WALL CHANGE DIRECT NEIGHBOR TO PATH
-        else if (maze[y, x] == WALL)
-            maze[(sign == -1) ? y + 1 : y - 1, x] = PATH;
     }
 
     /// <summary>
@@ -155,9 +143,10 @@ public class PrimsMaze
         {
             for (int j = 0; j < width; j++)
             {
-                if (maze[i, j] == WALL || maze[i, j] == 0)  Console.Write("|");
-                else if (maze[i, j] == PATH)                Console.Write((char)186);
-                else                                        Console.Write((char) maze[i, j]);
+                if (maze[i, j] == WALL) Console.Write("|");
+                else if (maze[i, j] == PATH) Console.Write((char)186);
+                //else if (maze[i, j] == 2) Console.Write(2);
+                else Console.Write((char)maze[i, j]);
             }
             Console.WriteLine();
         }
@@ -326,24 +315,6 @@ public class BFS
         return neighbors;
     }
 
-    /// <summary>
-    /// Method so we can implement back tracking in the game 
-    /// </summary>
-    /// <param name="distanceMatrix"> 2D array of Vertices that contains information on any given vertex </param>
-    /// <param name="maze">the final maze graph</param>
-    /// <param name="start"> Original starting location of the maze creation </param>
-    /// <param name="end"> the location of the longest path or the maximum distance from the node</param>
-    /// <returns></returns>
-    public Vector2 TracePath(Vertex[,] distanceMatrix, int[,] maze, Vector2 start, Vector2 end)
-    {
-        if (end != start)
-        { 
-            //Recursive call to mark the new end as the parent vertice of the current end
-            return TracePath(distanceMatrix, maze, start, distanceMatrix[(int)end.Y, (int)end.X].Prev);
-        }
-        return end;//essentially returns start
-    }
-
 
     /// <summary>
     ///  Method to visualize the path by changing the traced path to a different ascii chacater
@@ -369,6 +340,33 @@ public class BFS
     }
 
     /// <summary>
+    ///  Method to visualize the path by changing the traced path to a different ascii chacater
+    /// </summary>
+    /// <param name="distanceMatrix"> 2D array of Vertices that contains information on any given vertex </param>
+    /// <param name="maze">the final maze graph</param>
+    /// <param name="start"> Original starting location of the maze creation </param>
+    /// <param name="end"> the location of the longest path or the maximum distance from the node</param>
+    /// <param name="pathChar"> Ascii value to change the path to within the maze for printing. Default is @ </param>
+    /// <returns></returns>
+    public int[,] TracePathWithInt(Vertex[,] distanceMatrix, int[,] maze, Vector2 start, Vector2 end, int finalPathValue = 2)
+    {
+        if(finalPathValue == 0 || finalPathValue == 1)
+        {
+            throw new FormatException("Cant trace path with PATH or WALL (pick number other than 0 or 1 to trace path with");
+        }
+        if (end != start)
+        {
+            //Set maze value to a given char
+            maze[(int)end.Y, (int)end.X] = finalPathValue;
+            //Recursive call to mark the new end as the parent vertice of the current end
+            return TracePathWithInt(distanceMatrix, maze, start, distanceMatrix[(int)end.Y, (int)end.X].Prev, finalPathValue);
+        }
+        //Set start value to pathChar
+        maze[(int)start.Y, (int)start.X] =finalPathValue;
+        return maze;
+    }
+
+    /// <summary>
     /// Return the vertice's location with the maximum distance
     /// from the start of the maze
     /// </summary>
@@ -386,9 +384,10 @@ public class BFS
     /// <param name="start"> Origin of the maze creation </param>
     /// <param name="maze"> Already generated maze for paths to be evaluated </param>
     /// <returns></returns>
-    public Vector2 ComputeAndGetEnd(Vector2 start, int[,] maze)
+    public Vector2 ComputeAndGetEnd(Vector2 start, int[,] maze, int finalPathValue = 2)
     {
         ComputeDistances(start, maze);
+        TracePathWithInt(distanceMatrix, maze, start, maxDistance.Loc, finalPathValue);
         return maxDistance.Loc;
     }
 
@@ -446,25 +445,37 @@ public class Program
 {
     static void Main(String[] args)
     {
-        int height = 8;
-        int width = 8;
+        int height = 31;
+        int width = 101;
         Vector2 start = new Vector2(0, 0);
-        PrimsMaze prims = new PrimsMaze(width, height, start, guranteeBounds: true);
+        PrimsMaze prims = new PrimsMaze(width, height, start, guaranteeBounds: false);
         prims.printGraph();
         Console.WriteLine();
-
         //BFS
         BFS bfs = new BFS();
-        BFS.Vertex[,] distanceMatrixBFS = new BFS.Vertex[height, width];
-        distanceMatrixBFS = bfs.ComputeDistances(prims.start, prims.maze);
-
-        //Back Track Path
-        prims.maze = bfs.TracePath(distanceMatrixBFS, prims.maze, prims.start, bfs.maxDistance.Loc, pathChar: '@');
+        bfs.ComputeAndGetEnd(prims.start, prims.maze, finalPathValue: 2);
+        //Set Start and End
         Console.WriteLine("BFS Max Distance: " + bfs.maxDistance.Distance + "\nMax Distance Turns: " + bfs.maxDistance.Turns + "\nMax distance end loc: " + bfs.maxDistance.Loc.ToString());
         //Set start and End
         prims.maze[(int)prims.start.Y, (int)prims.start.X] = '$';
         prims.maze[(int)bfs.maxDistance.Loc.Y, (int)bfs.maxDistance.Loc.X] = '$';
         prims.printGraph();
+
+        
+
+
+
+        /*//BFS.Vertex[,] distanceMatrixBFS = new BFS.Vertex[height, width];
+        //distanceMatrixBFS = bfs.ComputeDistances(prims.start, prims.maze);
+        bfs.ComputeAndGetEnd(start, prims.maze);
+        //bfs.TracePath(bfs.distanceMatrix, prims.maze, start, bfs.maxDistance.Loc, 2);
+        //Back Track Path
+        //prims.maze = bfs.TracePath(distanceMatrixBFS, prims.maze, prims.start, bfs.maxDistance.Loc, pathChar: '@');
+        Console.WriteLine("BFS Max Distance: " + bfs.maxDistance.Distance + "\nMax Distance Turns: " + bfs.maxDistance.Turns + "\nMax distance end loc: " + bfs.maxDistance.Loc.ToString());
+        //Set start and End
+        prims.maze[(int)prims.start.Y, (int)prims.start.X] = '$';
+        prims.maze[(int)bfs.maxDistance.Loc.Y, (int)bfs.maxDistance.Loc.X] = '$';
+        prims.printGraph();*/
 
         /*prims.maze = bfs.TracePath(distanceMatrixBFS, prims.maze, prims.start, bfs.maxTurns.Loc, pathChar: '&');
         Console.WriteLine();
