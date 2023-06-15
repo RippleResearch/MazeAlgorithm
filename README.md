@@ -88,7 +88,7 @@ This will output something similar to the following:
 ### NOTES
 When using bounds, the program will automatically increment your height and width of the graph as well as move the location's start value by one; however, the actual 'usable' maze will still be one less than requested.
 
-For example, a height and width of 6 with guaranteeBound: true will produce:
+For example, a height and width of 6 with bounds: true will produce:
 
 ![Even Out](/Assets/Even-Out.png)
 
