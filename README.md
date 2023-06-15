@@ -50,12 +50,10 @@ To use this program as is, all one needs to do is the following:
 2. Create a PrimsMaze object using the constructor
 ```
 	PrimsMaze prims = new PrimsMaze(width, height, start, bounds: False)
-	
-	*In addition to the int height and width you defined, there is another parameter, bounds. Bounds determine whether you want the 
-	maze to handle making a perimeter of walls or not. It is by default set to false (and requires and odd height and width), 
-	and it is recommended to use it this way. See **Notes** for more.*
 ```
-*This line will automatically run and generate the maze. It will be stored in a public field named maze. To access this maze, just use prims.maze.*
+*In addition to the int height and width you defined, there is another parameter, bounds. Bounds determines whether you want the maze to handle making a perimeter of walls or not. It is by default set to false (and requires and odd height and width), and it is recommended to use it this way. See **Notes** for more.*
+
+*The constructor for primsMaze will automatically run and generate the maze. It will be stored in a public field named maze. To access this maze, just use prims.maze.*
 
 3. Create a BFS object using the constructor and use the ComputeAndGetEnd Method:
 ```
