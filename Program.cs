@@ -13,16 +13,16 @@ public class PrimsMaze
     public Vector2 start { get; set; }
     public int[,] maze { get; set; }
 
-    public PrimsMaze(int width, int height, Vector2 start, bool guaranteeBounds = false)
+    public PrimsMaze(int width, int height, Vector2 start, bool bounds = false)
     {
-        if (guaranteeBounds)
+        if (bounds)
         {
             if (width % 2 == 1 || height % 2 == 1) { 
                 throw new FormatException("When using bounds width and height must be even!"); 
             }
             width++; height++; start.X++; start.Y++;
         }
-        else if(!guaranteeBounds && (width % 2 == 0 || height % 2 == 0)) { 
+        else if(!bounds && (width % 2 == 0 || height % 2 == 0)) { 
             throw new FormatException("When NOT using bounds width and height must be odd!"); 
         }
         
@@ -448,7 +448,7 @@ public class Program
         int height = 31;
         int width = 101;
         Vector2 start = new Vector2(0, 0);
-        PrimsMaze prims = new PrimsMaze(width, height, start, guaranteeBounds: false);
+        PrimsMaze prims = new PrimsMaze(width, height, start, bounds: false);
         prims.printGraph();
         Console.WriteLine();
         //BFS

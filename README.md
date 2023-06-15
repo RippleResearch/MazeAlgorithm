@@ -49,7 +49,11 @@ To use this program as is, all one needs to do is the following:
 1. Define an int height width and Vector2 Starting point.
 2. Create a PrimsMaze object using the constructor
 ```
-	PrimsMaze prims = new PrimsMaze(width, height, start, guaranteeBound: False)
+	PrimsMaze prims = new PrimsMaze(width, height, start, bounds: False)
+	
+	*In addition to the int height and width you defined, there is another parameter, bounds. Bounds determine whether you want the 
+	maze to handle making a perimeter of walls or not. It is by default set to false (and requires and odd height and width), 
+	and it is recommended to use it this way. See **Notes** for more.*
 ```
 *This line will automatically run and generate the maze. It will be stored in a public field named maze. To access this maze, just use prims.maze.*
 
@@ -65,7 +69,7 @@ An example may look something like this:
 int height = 31;
 int width = 101;
 Vector2 start = new Vector2(0, 0);
-PrimsMaze prims = new PrimsMaze(width, height, start, guaranteeBounds: false);
+PrimsMaze prims = new PrimsMaze(width, height, start, bounds: false);
 prims.printGraph();
 Console.WriteLine();
 //BFS
@@ -74,9 +78,9 @@ bfs.ComputeAndGetEnd(prims.start, prims.maze, finalPathValue: 2);
 //Set Start and End
 Console.WriteLine("BFS Max Distance: " + bfs.maxDistance.Distance + "\nMax Distance Turns: " + bfs.maxDistance.Turns + "\nMax distance end loc: " + bfs.maxDistance.Loc.ToString());
 //Set start and End
- prims.maze[(int)prims.start.Y, (int)prims.start.X] = '$';
- prims.maze[(int)bfs.maxDistance.Loc.Y, (int)bfs.maxDistance.Loc.X] = '$';
- prims.printGraph();
+prims.maze[(int)prims.start.Y, (int)prims.start.X] = '$';
+prims.maze[(int)bfs.maxDistance.Loc.Y, (int)bfs.maxDistance.Loc.X] = '$';
+prims.printGraph();
 ```
 
 This will output something similar to the following:
